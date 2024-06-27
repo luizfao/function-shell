@@ -344,6 +344,17 @@ crossplane xpkg build \
     --package-file=function-arm64.xpkg
 ```
 
+### Crossplane push (to other repository than upbound repository)
+
+1. Login using Docker
+```shell
+docker login quay.io -u <user> -p <encrypted-password>
+```
+2. Push package to the repository
+```shell
+crossplane xpkg push -f function-amd64.xpkg quay.io/<user>/<image-name:tag>
+```
+
 ## References
 
 [functions]: https://docs.crossplane.io/latest/concepts/composition-functions

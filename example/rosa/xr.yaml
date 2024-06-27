@@ -1,0 +1,6 @@
+---
+apiVersion: openshift.io/v1alpha1
+kind: RosaShell
+metadata:
+  name: rosa
+spec: {}

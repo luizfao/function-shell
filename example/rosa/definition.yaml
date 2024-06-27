@@ -1,0 +1,30 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xrosashells.openshift.io
+spec:
+  group: openshift.io
+  names:
+    kind: XRosaShell
+    plural: xrosashells
+  claimNames:
+    kind: RosaShell
+    plural: rosashells
+  defaultCompositionRef:
+    name: rosashell.openshift.io
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              properties:
+                cmd:
+                  type: string
+            status:
+              properties:
+                atFunction:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true

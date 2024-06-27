@@ -1,0 +1,14 @@
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-shell-rosa
+  annotations:
+    app: function-shell-rosa
+    # Development mode: This tells crossplane beta render to connect to the function locally.
+    #render.crossplane.io/runtime: Development
+spec:
+  packagePullPolicy: Always
+  package: quay.io/rh_ee_lalmeida/crossplane-rosa-shell:0.1.0
+  # Development mode
+  #package: function-shell

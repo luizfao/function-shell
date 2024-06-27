@@ -10,8 +10,8 @@ ARG GO_VERSION=1
 # architecture that we're building the function for.
 FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS build
 
-RUN apt-get update && apt-get install -y coreutils jq unzip zsh
-RUN mkdir /scripts && chown 2000:2000 /scripts
+#RUN apt-get update && apt-get install -y coreutils jq unzip zsh
+#RUN mkdir /scripts && chown $USER:$USER /scripts
 
 # TODO: Install awscli, gcloud
 # RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
@@ -27,7 +27,9 @@ ENV CGO_ENABLED=0
 # This lets us avoid re-downloading modules if we don't need to. The type=target
 # mount tells Docker to mount the current directory read-only in the WORKDIR.
 # The type=cache mount tells Docker to cache the Go modules cache across builds.
-RUN --mount=target=. --mount=type=cache,target=/go/pkg/mod go mod download
+#RUN --mount=target=. --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . /fn
+RUN go mod download
 
 # The TARGETOS and TARGETARCH args are set by docker. We set GOOS and GOARCH to
 # these values to ask Go to compile a binary for these architectures. If
@@ -39,19 +41,22 @@ ARG TARGETARCH
 # Build the function binary. The type=target mount tells Docker to mount the
 # current directory read-only in the WORKDIR. The type=cache mount tells Docker
 # to cache the Go modules cache across builds.
-RUN --mount=target=. \
-    --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /function .
+#RUN --mount=target=. \
+#    --mount=type=cache,target=/go/pkg/mod \
+#    --mount=type=cache,target=/root/.cache/go-build \
+#    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /function .
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /function .
 
 # Produce the Function image. We use a very lightweight 'distroless'
 # Python3 image that includes useful commands but not build tools used
 # in previous stages.
 # FROM python:3.12
-FROM gcr.io/distroless/python3-debian12 AS image
+# FROM gcr.io/distroless/python3-debian12 AS image
+FROM quay.io/rh_ee_lalmeida/ubi8-minimal-rosa AS image
+# Better use the approach above to install rosa using builder instead of a custom image
 
 WORKDIR /
-COPY --from=build --chown=2000:2000 /scripts /scripts
+#COPY --from=build --chown=$USER:$USER /scripts /scripts
 
 COPY --from=build /bin /bin
 COPY --from=build /etc /etc
@@ -60,5 +65,7 @@ COPY --from=build /tmp /tmp
 COPY --from=build /usr /usr
 COPY --from=build /function /function
 EXPOSE 9443
-USER nonroot:nonroot
+
+# User must be in the ranges: [1000790000, 1000799999] due to security context constraint
+USER 1000790000:1000790000
 ENTRYPOINT ["/function"]

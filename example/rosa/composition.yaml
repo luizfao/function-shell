@@ -1,0 +1,23 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: rosashell.openshift.io
+spec:
+  compositeTypeRef:
+    apiVersion: openshift.io/v1alpha1
+    kind: XRosaShell
+  mode: Pipeline
+  pipeline:
+    - step: shell
+      functionRef:
+        name: function-shell-rosa
+      input:
+        apiVersion: shell.fn.crossplane.io/v1alpha1
+        kind: Parameters
+        shellEnvVars:
+          - key: PARAMS
+            value: "list versions"
+        shellCommand: |
+           rosa ${PARAMS}
+        stdoutField: status.atFunction.shell.stdout
+        stderrField: status.atFunction.shell.stderr
