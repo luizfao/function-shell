@@ -16,7 +16,7 @@ spec:
         kind: Parameters
         shellEnvVars:
           - key: PARAMS
-            value: "list versions"
+            value: "help"
         shellCommand: |
            rosa ${PARAMS}
         stdoutField: status.atFunction.shell.stdout
